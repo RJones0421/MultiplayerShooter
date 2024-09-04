@@ -12,6 +12,7 @@
 #include "InputActionValue.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
+#include "Online/OnlineSessionNames.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -20,6 +21,8 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 AMenuSystemCharacter::AMenuSystemCharacter()
 	: CreateSessionCompleteDelegate( FOnCreateSessionCompleteDelegate::CreateUObject( this, &ThisClass::OnCreateSessionComplete ) )
+	, FindSessionsCompleteDelegate( FOnFindSessionsCompleteDelegate::CreateUObject( this, &ThisClass::OnFindSessionsComplete ) )
+	, JoinSessionCompleteDelegate( FOnJoinSessionCompleteDelegate::CreateUObject( this, &ThisClass::OnJoinSessionComplete ) )
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -105,10 +108,30 @@ void AMenuSystemCharacter::CreateGameSession()
 	SessionSettings->bAllowJoinViaPresence = true;
 	SessionSettings->bShouldAdvertise = true;
 	SessionSettings->bUsesPresence = true;
+	SessionSettings->Set( FName( "MatchType" ), FString( "FreeForAll" ), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing );
 
 	// Create new session off of local player
 	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
 	OnlineSessionInterface->CreateSession( *LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, *SessionSettings );
+}
+
+void AMenuSystemCharacter::JoinGameSession()
+{
+	if (!OnlineSessionInterface.IsValid())
+	{
+		return;
+	}
+
+	OnlineSessionInterface->AddOnFindSessionsCompleteDelegate_Handle( FindSessionsCompleteDelegate );
+
+	// Find game sessions
+	SessionSearch = MakeShareable( new FOnlineSessionSearch() );
+	SessionSearch->MaxSearchResults = 10000;
+	SessionSearch->bIsLanQuery = false;
+	SessionSearch->QuerySettings.Set( SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals );
+
+	const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+	OnlineSessionInterface->FindSessions( *LocalPlayer->GetPreferredUniqueNetId(), SessionSearch.ToSharedRef() );
 }
 
 void AMenuSystemCharacter::OnCreateSessionComplete( FName SessionName, bool bWasSuccessful )
@@ -137,6 +160,88 @@ void AMenuSystemCharacter::OnCreateSessionComplete( FName SessionName, bool bWas
 			FColor::Blue,
 			FString::Printf( TEXT( "Created session: %s" ), *SessionName.ToString() )
 		);
+	}
+
+	// Create lobby
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		World->ServerTravel( FString( "Game/ThirdPerson/Maps/Lobby?listen" ) );
+	}
+}
+
+void AMenuSystemCharacter::OnFindSessionsComplete( bool bWasSuccessful )
+{
+	if (!OnlineSessionInterface.IsValid())
+	{
+		return;
+	}
+
+	for (auto Result : SessionSearch->SearchResults)
+	{
+		// Get host info
+		FString Id = Result.GetSessionIdStr();
+		FString User = Result.Session.OwningUserName;
+
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Cyan,
+				FString::Printf( TEXT( "ID: %s, User: %s" ), *Id, *User )
+			);
+		}
+
+		// Determine match type
+		FString MatchType;
+		Result.Session.SessionSettings.Get( FName( "MatchType" ), MatchType );
+
+		if (MatchType == FString("FreeForAll"))
+		{
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(
+					-1,
+					15.f,
+					FColor::Cyan,
+					FString::Printf( TEXT( "Joining match type %s" ), *MatchType )
+				);
+			}
+
+			// Join session
+			OnlineSessionInterface->AddOnJoinSessionCompleteDelegate_Handle( JoinSessionCompleteDelegate );
+			const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+			OnlineSessionInterface->JoinSession( *LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, Result );
+		}
+	}
+}
+
+void AMenuSystemCharacter::OnJoinSessionComplete( FName SessionName, EOnJoinSessionCompleteResult::Type Result )
+{
+	if (!OnlineSessionInterface.IsValid())
+	{
+		return;
+	}
+
+	FString Address;
+	if (OnlineSessionInterface->GetResolvedConnectString( NAME_GameSession, Address ))
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Yellow,
+				FString::Printf( TEXT( "Connect string: %s" ), *Address )
+			);
+		}
+
+		APlayerController* PlayerController = GetGameInstance()->GetFirstLocalPlayerController();
+		if (PlayerController)
+		{
+			PlayerController->ClientTravel( Address, ETravelType::TRAVEL_Absolute );
+		}
 	}
 }
 
