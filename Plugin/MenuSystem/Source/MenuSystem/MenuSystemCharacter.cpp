@@ -108,6 +108,8 @@ void AMenuSystemCharacter::CreateGameSession()
 	SessionSettings->bAllowJoinViaPresence = true;
 	SessionSettings->bShouldAdvertise = true;
 	SessionSettings->bUsesPresence = true;
+	// Uncomment if having issues finding lobby
+	SessionSettings->bUseLobbiesIfAvailable = true;
 	SessionSettings->Set( FName( "MatchType" ), FString( "FreeForAll" ), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing );
 
 	// Create new session off of local player
@@ -166,7 +168,7 @@ void AMenuSystemCharacter::OnCreateSessionComplete( FName SessionName, bool bWas
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		World->ServerTravel( FString( "Game/ThirdPerson/Maps/Lobby?listen" ) );
+		World->ServerTravel( FString( "/Game/ThirdPerson/Maps/Lobby?listen" ) );
 	}
 }
 
