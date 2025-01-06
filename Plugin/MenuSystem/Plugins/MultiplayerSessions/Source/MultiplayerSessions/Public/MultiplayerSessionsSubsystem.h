@@ -67,4 +67,9 @@ private:
 	FDelegateHandle JoinSessionCompleteDelegateHandle;
 	FDelegateHandle DestroySessionCompleteDelegateHandle;
 	FDelegateHandle StartSessionCompleteDelegateHandle;
+
+	// Information required for changing hosts
+	bool bCreateSessionOnDestroy = false;
+	int32 LastNumPublicConnections;
+	FString LastMatchType;
 };
