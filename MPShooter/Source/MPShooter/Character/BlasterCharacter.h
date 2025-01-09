@@ -4,7 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "InputActionValue.h"
 #include "BlasterCharacter.generated.h"
+
+class USpringArmComponent;
+class UCameraComponent;
+class UInputMappingContext;
+class UInputAction;
 
 UCLASS()
 class MPSHOOTER_API ABlasterCharacter : public ACharacter
@@ -15,15 +21,40 @@ public:
 	// Sets default values for this character's properties
 	ABlasterCharacter();
 
+	// Called every frame
+	virtual void Tick( float DeltaTime ) override;
+
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent( class UInputComponent* PlayerInputComponent ) override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	void MoveForward( const FInputActionValue& Value );
+	void MoveRight( const FInputActionValue& Value );
+	void Turn( const FInputActionValue& Value );
+	void LookUp( const FInputActionValue& Value );
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputMappingContext* PlayerMappingContext;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* MoveForwardAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* MoveRightAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* TurnAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* LookUpAction;
+
+private:
+	UPROPERTY(VisibleAnywhere, Category = Camera)
+	USpringArmComponent* CameraBoom;
+
+	UPROPERTY( VisibleAnywhere, Category = Camera )
+	UCameraComponent* FollowCamera;
+
+public:
+
 
 };
