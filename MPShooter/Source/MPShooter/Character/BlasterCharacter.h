@@ -11,6 +11,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class UWidgetComponent;
 
 UCLASS()
 class MPSHOOTER_API ABlasterCharacter : public ACharacter
@@ -56,7 +57,6 @@ private:
 	UPROPERTY( VisibleAnywhere, Category = Camera )
 	UCameraComponent* FollowCamera;
 
-public:
-
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+	UWidgetComponent* OverheadWidget;
 };
