@@ -8,10 +8,11 @@
 #include "BlasterCharacter.generated.h"
 
 class AWeapon;
-class USpringArmComponent;
 class UCameraComponent;
+class UCombatComponent;
 class UInputMappingContext;
 class UInputAction;
+class USpringArmComponent;
 class UWidgetComponent;
 
 UCLASS()
@@ -20,16 +21,14 @@ class MPSHOOTER_API ABlasterCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	ABlasterCharacter();
-
-	// Called every frame
+	virtual void PostInitializeComponents() override;
 	virtual void Tick( float DeltaTime ) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent( class UInputComponent* PlayerInputComponent ) override;
-
 	virtual void GetLifetimeReplicatedProps( TArray<FLifetimeProperty>& OutLifetimeProps ) const override;
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -39,6 +38,7 @@ protected:
 	void MoveRight( const FInputActionValue& Value );
 	void Turn( const FInputActionValue& Value );
 	void LookUp( const FInputActionValue& Value );
+	void EquipButtonPressed( const FInputActionValue& Value );
 
 private:
 	UFUNCTION()
@@ -48,7 +48,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* PlayerMappingContext;
-	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = Input )
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* JumpAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* MoveForwardAction;
@@ -58,6 +58,8 @@ protected:
 	UInputAction* TurnAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* LookUpAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* EquipAction;
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -71,6 +73,9 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
 	AWeapon* OverlappingWeapon;
+
+	UPROPERTY(VisibleAnywhere)
+	UCombatComponent* Combat;
 
 
 public:

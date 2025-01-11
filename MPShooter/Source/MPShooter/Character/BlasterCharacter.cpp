@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "MPShooter/BlasterComponents/CombatComponent.h"
 #include "MPShooter/Weapon/Weapon.h"
 
 // Sets default values
@@ -31,6 +32,19 @@ ABlasterCharacter::ABlasterCharacter()
 
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>( TEXT( "OverheadWidget" ) );
 	OverheadWidget->SetupAttachment( RootComponent );
+
+	Combat = CreateDefaultSubobject<UCombatComponent>( TEXT( "CombatComponent" ) );
+	Combat->SetIsReplicated( true );
+}
+
+void ABlasterCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (Combat)
+	{
+		Combat->Character = this;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -61,6 +75,8 @@ void ABlasterCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputC
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>( PlayerInputComponent ))
 	{
 		EnhancedInputComponent->BindAction( JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump );
+		EnhancedInputComponent->BindAction( JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping );
+		EnhancedInputComponent->BindAction( EquipAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EquipButtonPressed );
 
 		EnhancedInputComponent->BindAction( MoveForwardAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::MoveForward );
 		EnhancedInputComponent->BindAction( MoveRightAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::MoveRight );
@@ -121,6 +137,16 @@ void ABlasterCharacter::LookUp( const FInputActionValue& Value )
 
 	AddControllerPitchInput( CurrentValue );
 }
+
+void ABlasterCharacter::EquipButtonPressed( const FInputActionValue& Value )
+{
+	if (Combat && HasAuthority())
+	{
+		Combat->EquipWeapon( OverlappingWeapon );
+	}
+}
+
+// ----- Replication ------------------------------------------------------------------------------
 
 // Sets the overlapping weapon to be used and shows prompt to server player
 void ABlasterCharacter::SetOverlappingWeapon( AWeapon* Weapon )
