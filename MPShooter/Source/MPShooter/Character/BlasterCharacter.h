@@ -62,6 +62,11 @@ protected:
 	UInputAction* EquipAction;
 
 private:
+	// Unreal functions
+	UFUNCTION(Server, Reliable)
+	void ServerEquipButtonPressed();
+
+	// Unreal properties
 	UPROPERTY(VisibleAnywhere, Category = Camera)
 	USpringArmComponent* CameraBoom;
 

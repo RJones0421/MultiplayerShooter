@@ -30,6 +30,8 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaTime ) override;
 
+	virtual void GetLifetimeReplicatedProps( TArray<FLifetimeProperty>& OutLifetimeProps ) const override;
+
 	void ShowPickupWidget( bool bShowWidget );
 
 protected:
@@ -54,18 +56,24 @@ protected:
 	);
 
 private:
+	// Unreal function
+	UFUNCTION()
+	void OnRep_WeaponState();
+
+	// Unreal properties
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	USkeletalMeshComponent* WeaponMesh;
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	USphereComponent* AreaSphere;
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
 	EWeaponState WeaponState;
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
 	UWidgetComponent* PickupWidget;
 
 public:
-	FORCEINLINE void SetWeaponState( EWeaponState State ) { WeaponState = State; }
+	void SetWeaponState( EWeaponState State );
+	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 };

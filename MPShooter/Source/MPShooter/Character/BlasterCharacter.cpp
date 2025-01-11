@@ -140,13 +140,28 @@ void ABlasterCharacter::LookUp( const FInputActionValue& Value )
 
 void ABlasterCharacter::EquipButtonPressed( const FInputActionValue& Value )
 {
-	if (Combat && HasAuthority())
+	if (Combat)
 	{
-		Combat->EquipWeapon( OverlappingWeapon );
+		if (HasAuthority())
+		{
+			Combat->EquipWeapon( OverlappingWeapon );
+		}
+		else
+		{
+			ServerEquipButtonPressed();
+		}
 	}
 }
 
 // ----- Replication ------------------------------------------------------------------------------
+
+void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
+{
+	if (Combat)
+	{
+		Combat->EquipWeapon( OverlappingWeapon );
+	}
+}
 
 // Sets the overlapping weapon to be used and shows prompt to server player
 void ABlasterCharacter::SetOverlappingWeapon( AWeapon* Weapon )
