@@ -6,6 +6,19 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
+class USphereComponent;
+class UWidgetComponent;
+
+UENUM(BlueprintType)
+enum class EWeaponState : uint8
+{
+	EWS_Initial UMETA(DisplayName = "Initial State"),
+	EWS_Equipped UMETA(DisplayName = "Equipped"),
+	EWS_Dropped UMETA(DisplayName = "Dropped"),
+
+	EWS_MAX UMETA(DisplayName = "DefaultMAX"),
+};
+
 UCLASS()
 class MPSHOOTER_API AWeapon : public AActor
 {
@@ -14,13 +27,32 @@ class MPSHOOTER_API AWeapon : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AWeapon();
+	// Called every frame
+	virtual void Tick( float DeltaTime ) override;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void OnSphereOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
 
+private:
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	USkeletalMeshComponent* WeaponMesh;
+
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	USphereComponent* AreaSphere;
+
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	EWeaponState WeaponState;
+
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
+	UWidgetComponent* PickupWidget;
 };
