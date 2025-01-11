@@ -8,6 +8,8 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "MPShooter/Weapon/Weapon.h"
 
 // Sets default values
 ABlasterCharacter::ABlasterCharacter()
@@ -45,6 +47,12 @@ void ABlasterCharacter::BeginPlay()
 	}
 }
 
+// Called every frame
+void ABlasterCharacter::Tick( float DeltaTime )
+{
+	Super::Tick( DeltaTime );
+}
+
 // Called to bind functionality to input
 void ABlasterCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputComponent )
 {
@@ -59,6 +67,13 @@ void ABlasterCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction( TurnAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Turn );
 		EnhancedInputComponent->BindAction( LookUpAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::LookUp );
 	}
+}
+
+void ABlasterCharacter::GetLifetimeReplicatedProps( TArray<FLifetimeProperty>& OutLifetimeProps ) const
+{
+	Super::GetLifetimeReplicatedProps( OutLifetimeProps );
+
+	DOREPLIFETIME_CONDITION( ABlasterCharacter, OverlappingWeapon, COND_OwnerOnly );
 }
 
 // ----- Controls ---------------------------------------------------------------------------------
@@ -107,12 +122,36 @@ void ABlasterCharacter::LookUp( const FInputActionValue& Value )
 	AddControllerPitchInput( CurrentValue );
 }
 
-// ----- Updates ----------------------------------------------------------------------------------
-
-// Called every frame
-void ABlasterCharacter::Tick(float DeltaTime)
+// Sets the overlapping weapon to be used and shows prompt to server player
+void ABlasterCharacter::SetOverlappingWeapon( AWeapon* Weapon )
 {
-	Super::Tick(DeltaTime);
+	// Hide the widget if one currently exists
+	if ( OverlappingWeapon )
+	{
+		OverlappingWeapon->ShowPickupWidget( false );
+	}
 
+	// Update reference and show if needed
+	OverlappingWeapon = Weapon;
+	if ( IsLocallyControlled() )
+	{
+		if ( OverlappingWeapon )
+		{
+			OverlappingWeapon->ShowPickupWidget( true );
+		}
+	}
 }
 
+// Rep notify to show/hide prompt
+void ABlasterCharacter::OnRep_OverlappingWeapon( AWeapon* LastWeapon )
+{
+	if ( OverlappingWeapon )
+	{
+		OverlappingWeapon->ShowPickupWidget( true );
+	}
+
+	if ( LastWeapon )
+	{
+		LastWeapon->ShowPickupWidget( false );
+	}
+}
