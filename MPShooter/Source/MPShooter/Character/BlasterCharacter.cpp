@@ -163,26 +163,6 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 	}
 }
 
-// Sets the overlapping weapon to be used and shows prompt to server player
-void ABlasterCharacter::SetOverlappingWeapon( AWeapon* Weapon )
-{
-	// Hide the widget if one currently exists
-	if ( OverlappingWeapon )
-	{
-		OverlappingWeapon->ShowPickupWidget( false );
-	}
-
-	// Update reference and show if needed
-	OverlappingWeapon = Weapon;
-	if ( IsLocallyControlled() )
-	{
-		if ( OverlappingWeapon )
-		{
-			OverlappingWeapon->ShowPickupWidget( true );
-		}
-	}
-}
-
 // Rep notify to show/hide prompt
 void ABlasterCharacter::OnRep_OverlappingWeapon( AWeapon* LastWeapon )
 {
@@ -195,4 +175,30 @@ void ABlasterCharacter::OnRep_OverlappingWeapon( AWeapon* LastWeapon )
 	{
 		LastWeapon->ShowPickupWidget( false );
 	}
+}
+
+// ----- Getters and Setters ----------------------------------------------------------------------
+// Sets the overlapping weapon to be used and shows prompt to server player
+void ABlasterCharacter::SetOverlappingWeapon( AWeapon* Weapon )
+{
+	// Hide the widget if one currently exists
+	if (OverlappingWeapon)
+	{
+		OverlappingWeapon->ShowPickupWidget( false );
+	}
+
+	// Update reference and show if needed
+	OverlappingWeapon = Weapon;
+	if (IsLocallyControlled())
+	{
+		if (OverlappingWeapon)
+		{
+			OverlappingWeapon->ShowPickupWidget( true );
+		}
+	}
+}
+
+bool ABlasterCharacter::IsWeaponEquipped()
+{
+	return (Combat && Combat->EquippedWeapon);
 }

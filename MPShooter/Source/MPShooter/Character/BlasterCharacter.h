@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "GameFramework/Character.h"
 #include "BlasterCharacter.generated.h"
 
 class AWeapon;
@@ -85,4 +85,5 @@ private:
 
 public:
 	void SetOverlappingWeapon( AWeapon* Weapon );
+	bool IsWeaponEquipped();
 };
