@@ -35,6 +35,8 @@ ABlasterCharacter::ABlasterCharacter()
 
 	Combat = CreateDefaultSubobject<UCombatComponent>( TEXT( "CombatComponent" ) );
 	Combat->SetIsReplicated( true );
+
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -74,6 +76,7 @@ void ABlasterCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputC
 
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>( PlayerInputComponent ))
 	{
+		EnhancedInputComponent->BindAction( CrouchAction, ETriggerEvent::Started, this, &ABlasterCharacter::CrouchButtonPressed );
 		EnhancedInputComponent->BindAction( JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump );
 		EnhancedInputComponent->BindAction( JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping );
 		EnhancedInputComponent->BindAction( EquipAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EquipButtonPressed );
@@ -136,6 +139,18 @@ void ABlasterCharacter::LookUp( const FInputActionValue& Value )
 	const float CurrentValue = Value.Get<float>();
 
 	AddControllerPitchInput( CurrentValue );
+}
+
+void ABlasterCharacter::CrouchButtonPressed( const FInputActionValue& Value )
+{
+	if (bIsCrouched)
+	{
+		UnCrouch();
+	}
+	else
+	{
+		Crouch();
+	}
 }
 
 void ABlasterCharacter::EquipButtonPressed( const FInputActionValue& Value )

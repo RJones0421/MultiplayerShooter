@@ -38,6 +38,7 @@ protected:
 	void MoveRight( const FInputActionValue& Value );
 	void Turn( const FInputActionValue& Value );
 	void LookUp( const FInputActionValue& Value );
+	void CrouchButtonPressed( const FInputActionValue& Value );
 	void EquipButtonPressed( const FInputActionValue& Value );
 
 private:
@@ -48,6 +49,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* PlayerMappingContext;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* CrouchAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* JumpAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
