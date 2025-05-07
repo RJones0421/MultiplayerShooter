@@ -77,7 +77,7 @@ void ABlasterCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputC
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>( PlayerInputComponent ))
 	{
 		EnhancedInputComponent->BindAction( CrouchAction, ETriggerEvent::Started, this, &ABlasterCharacter::CrouchButtonPressed );
-		EnhancedInputComponent->BindAction( JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump );
+		EnhancedInputComponent->BindAction( JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump );
 		EnhancedInputComponent->BindAction( JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping );
 		EnhancedInputComponent->BindAction( EquipAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::EquipButtonPressed );
 
@@ -85,6 +85,9 @@ void ABlasterCharacter::SetupPlayerInputComponent( UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction( MoveRightAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::MoveRight );
 		EnhancedInputComponent->BindAction( TurnAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::Turn );
 		EnhancedInputComponent->BindAction( LookUpAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::LookUp );
+
+		EnhancedInputComponent->BindAction( ADSAction, ETriggerEvent::Triggered, this, &ABlasterCharacter::ADSButtonPressed );
+		EnhancedInputComponent->BindAction( ADSAction, ETriggerEvent::Completed, this, &ABlasterCharacter::ADSButtonReleased );
 	}
 }
 
@@ -168,6 +171,22 @@ void ABlasterCharacter::EquipButtonPressed( const FInputActionValue& Value )
 	}
 }
 
+void ABlasterCharacter::ADSButtonPressed(const FInputActionValue& Value)
+{
+	if (Combat)
+	{
+		Combat->SetAiming( true );
+	}
+}
+
+void ABlasterCharacter::ADSButtonReleased(const FInputActionValue& Value)
+{
+	if (Combat)
+	{
+		Combat->SetAiming( false );
+	}
+}
+
 // ----- Replication ------------------------------------------------------------------------------
 
 void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
@@ -216,4 +235,9 @@ void ABlasterCharacter::SetOverlappingWeapon( AWeapon* Weapon )
 bool ABlasterCharacter::IsWeaponEquipped()
 {
 	return (Combat && Combat->EquippedWeapon);
+}
+
+bool ABlasterCharacter::IsAiming()
+{
+	return (Combat && Combat->bAiming);
 }

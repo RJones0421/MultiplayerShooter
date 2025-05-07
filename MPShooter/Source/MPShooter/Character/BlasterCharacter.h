@@ -40,6 +40,8 @@ protected:
 	void LookUp( const FInputActionValue& Value );
 	void CrouchButtonPressed( const FInputActionValue& Value );
 	void EquipButtonPressed( const FInputActionValue& Value );
+	void ADSButtonPressed( const FInputActionValue& Value );
+	void ADSButtonReleased( const FInputActionValue& Value );
 
 private:
 	UFUNCTION()
@@ -63,6 +65,8 @@ protected:
 	UInputAction* LookUpAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* EquipAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* ADSAction;
 
 private:
 	// Unreal functions
@@ -89,4 +93,5 @@ private:
 public:
 	void SetOverlappingWeapon( AWeapon* Weapon );
 	bool IsWeaponEquipped();
+	bool IsAiming();
 };
